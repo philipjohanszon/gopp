@@ -3,6 +3,7 @@ package evaluator
 import (
 	"go++/ast"
 	"go++/object"
+	"strconv"
 )
 
 func evaluatePrefixExpression(operator string, right object.Object) object.Object {
@@ -37,6 +38,12 @@ func evaluateInfixExpression(operator string, left, right object.Object) object.
 	switch {
 	case left.Type() == object.INTEGER && right.Type() == object.INTEGER:
 		return evaluateIntegerInfixExpression(operator, left, right)
+	case left.Type() == object.STRING && right.Type() == object.STRING:
+		return evaluateStringInfixExpression(operator, left, right)
+	case left.Type() == object.STRING && right.Type() == object.INTEGER:
+		return evaluateStringInfixExpression(operator, left, intToString(right.(*object.Integer)))
+	case left.Type() == object.INTEGER && right.Type() == object.STRING:
+		return evaluateStringInfixExpression(operator, intToString(right.(*object.Integer)), right)
 	case operator == "==":
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
@@ -46,6 +53,10 @@ func evaluateInfixExpression(operator string, left, right object.Object) object.
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
+}
+
+func intToString(integer *object.Integer) *object.String {
+	return &object.String{Value: strconv.Itoa(int(integer.Value))}
 }
 
 func evaluateIntegerInfixExpression(operator string, left, right object.Object) object.Object {
@@ -61,6 +72,26 @@ func evaluateIntegerInfixExpression(operator string, left, right object.Object) 
 		return &object.Integer{Value: leftVal * rightVal}
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
+	case "<":
+		return nativeBoolToBooleanObject(leftVal < rightVal)
+	case ">":
+		return nativeBoolToBooleanObject(leftVal > rightVal)
+	case "==":
+		return nativeBoolToBooleanObject(leftVal == rightVal)
+	case "!=":
+		return nativeBoolToBooleanObject(leftVal != rightVal)
+	default:
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+	}
+}
+
+func evaluateStringInfixExpression(operator string, left, right object.Object) object.Object {
+	leftVal := left.(*object.String).Value
+	rightVal := right.(*object.String).Value
+
+	switch operator {
+	case "+":
+		return &object.String{Value: leftVal + rightVal}
 	case "<":
 		return nativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":

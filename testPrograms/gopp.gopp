@@ -1,0 +1,13 @@
+let countdown = fn (str, amount) { 
+    if !amount {
+        return str + ", " + 0
+    }
+    
+    if str == "" {
+        countdown(str + amount, amount - 1)
+    } else {
+        countdown(str + ", " + amount, amount - 1)
+    }
+}
+
+countdown("", 10)

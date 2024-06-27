@@ -21,6 +21,16 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
+	case *ast.AssignExpression:
+		evaluated := Evaluate(node.Value, env)
+
+		if isError(evaluated) {
+			return evaluated
+		}
+
+		env.Set(node.Assignee.Value, evaluated)
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
 	case *ast.Identifier:

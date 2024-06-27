@@ -7,4 +7,5 @@ const (
 	RETURN   = "RETURN"
 	ERROR    = "ERROR"
 	FUNCTION = "FUNCTION"
+	STRING   = "STRING"
 )

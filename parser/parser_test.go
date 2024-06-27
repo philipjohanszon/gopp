@@ -13,9 +13,9 @@ func TestLetStatements(t *testing.T) {
 		expectedIdentifier string
 		expectedValue      interface{}
 	}{
-		{"let x = 5;", "x", 5},
-		{"let y = true;", "y", true},
-		{"let foobar = y;", "foobar", "y"},
+		{"let x = 5", "x", 5},
+		{"let y = true", "y", true},
+		{"let foobar = y", "foobar", "y"},
 	}
 
 	for _, tt := range tests {
@@ -72,10 +72,10 @@ func TestReturnStatements(t *testing.T) {
 		input       string
 		returnValue interface{}
 	}{
-		{"return 5;", 5},
-		{"return 10944;", 10944},
-		{"return true;", true},
-		{"return x;", "x"},
+		{"return 5", 5},
+		{"return 10944", 10944},
+		{"return true", true},
+		{"return x", "x"},
 	}
 
 	for _, tt := range tests {
@@ -718,6 +718,76 @@ func testInfixExpression(t *testing.T, exp ast.Expression, left interface{}, ope
 	}
 
 	return true
+}
+
+func TestStringLiteralExpression(t *testing.T) {
+	tests := []struct {
+		input string
+	}{
+		{"helloWorld"},
+		{"whats up"},
+		{"Howdy World"},
+		{"H"},
+	}
+
+	for _, tt := range tests {
+		lexer := lex.New(tt.input)
+		parser := New(lexer)
+
+		program := parser.ParseProgram()
+		checkParserErrors(t, parser)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		literal, ok := stmt.Expression.(*ast.StringLiteral)
+
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.StringLiteral. got=%T", stmt.Expression)
+		}
+
+		if literal.Value != tt.input {
+			t.Errorf("literal.Value = %s, want=%s", literal.Value, tt.input)
+		}
+	}
+}
+
+func TestAssignExpressionParsing(t *testing.T) {
+	tests := []struct {
+		input    string
+		assignee string
+		value    string
+	}{
+		{"a = 5", "a", "5"},
+		{"a = 5 * 5", "a", "(5 * 5)"},
+		{`a = "hey"`, "a", "hey"},
+	}
+
+	for _, tt := range tests {
+		lexer := lex.New(tt.input)
+		parser := New(lexer)
+
+		program := parser.ParseProgram()
+		checkParserErrors(t, parser)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.ExpressionStatement. got=%T", stmt.Expression)
+		}
+
+		exp, ok := stmt.Expression.(*ast.AssignExpression)
+
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.AssignExpression. got=%T", stmt.Expression)
+		}
+
+		if exp.Value.String() != tt.value {
+			t.Errorf("exp.Value = %s, want=%s", exp.Value, tt.value)
+		}
+
+		if exp.Assignee.String() != tt.assignee {
+			t.Errorf("exp.Assignee = %s, want=%s", exp.Assignee, tt.assignee)
+		}
+	}
 }
 
 func testLiteralExpression(t *testing.T, exp ast.Expression, expected interface{}) bool {

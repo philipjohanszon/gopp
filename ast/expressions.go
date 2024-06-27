@@ -101,3 +101,15 @@ func (c *CallExpression) String() string {
 
 	return out.String()
 }
+
+type AssignExpression struct {
+	Token    token.Token
+	Assignee Identifier
+	Value    Expression
+}
+
+func (a *AssignExpression) expressionNode()      {}
+func (a *AssignExpression) TokenLiteral() string { return a.Token.Literal }
+func (a *AssignExpression) String() string {
+	return a.Assignee.String() + " = " + a.Value.String()
+}

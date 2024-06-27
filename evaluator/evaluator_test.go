@@ -225,6 +225,18 @@ func TestErrorHandling(t *testing.T) {
 			"foobar",
 			"identifier not found: foobar",
 		},
+		{
+			`"test" - "hi"`,
+			"unknown operator: STRING - STRING",
+		},
+		{
+			`"test" / "hi"`,
+			"unknown operator: STRING / STRING",
+		},
+		{
+			`"test" * "hi"`,
+			"unknown operator: STRING * STRING",
+		},
 	}
 
 	for _, tt := range tests {
@@ -304,6 +316,66 @@ func TestFunctionApplication(t *testing.T) {
 
 	for _, tt := range tests {
 		testIntegerObject(t, testEvaluation(tt.input), tt.expected)
+	}
+}
+
+func TestStringConcatenation(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`"hello" + " " + "world"`, "hello world"},
+		{`"amount: " + 2`, "amount: 2"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEvaluation(tt.input)
+		str, ok := evaluated.(*object.String)
+
+		if !ok {
+			t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
+		}
+
+		if str.Value != tt.expected {
+			t.Fatalf("string has wrong value. got=%q", str.Value)
+		}
+	}
+}
+
+func TestIntegerAssignment(t *testing.T) {
+	input := `
+	let x = 0
+	x = 3
+	x
+`
+
+	evaluated := testEvaluation(input)
+	integer, ok := evaluated.(*object.Integer)
+
+	if !ok {
+		t.Fatalf("object is not Integer. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if integer.Value != 3 {
+		t.Fatalf("integer has wrong value. got=%d", integer.Value)
+	}
+}
+
+func TestStringAssignment(t *testing.T) {
+	input := `
+	let x = "hello"
+	x = "world"
+	x	
+`
+	evaluated := testEvaluation(input)
+	str, ok := evaluated.(*object.String)
+
+	if !ok {
+		t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
+	}
+
+	if str.Value != "world" {
+		t.Fatalf("string has wrong value. got=%s", str.Value)
 	}
 }
 

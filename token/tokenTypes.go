@@ -33,4 +33,6 @@ const (
 	FALSE    = "FALSE"
 	IF       = "IF"
 	ELSE     = "ELSE"
+
+	STRING = "STRING"
 )

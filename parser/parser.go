@@ -24,6 +24,7 @@ const (
 )
 
 var precedences = map[token.Type]int{
+	token.ASSIGN:      EQUALS,
 	token.EQUALS:      EQUALS,
 	token.NOTEQUALS:   EQUALS,
 	token.LESSTHAN:    LESSGREATER,
@@ -69,6 +70,8 @@ func New(lexer *lex.Lexer) *Parser {
 	parser.registerPrefix(token.IF, parser.parseIfExpression)
 	parser.registerPrefix(token.FUNCTION, parser.parseFunctionLiteral)
 
+	parser.registerPrefix(token.STRING, parser.parseStringLiteral)
+
 	parser.infixParseFns = make(map[token.Type]infixParseFn)
 	parser.registerInfix(token.PLUS, parser.parseInfixExpression)
 	parser.registerInfix(token.MINUS, parser.parseInfixExpression)
@@ -80,6 +83,7 @@ func New(lexer *lex.Lexer) *Parser {
 	parser.registerInfix(token.GREATERTHAN, parser.parseInfixExpression)
 
 	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
+	parser.registerInfix(token.ASSIGN, parser.parseAssignExpression)
 
 	return parser
 }
@@ -138,10 +142,6 @@ func (parser *Parser) parseLetStatement() *ast.LetStatement {
 
 	stmt.Value = parser.parseExpression(LOWEST)
 
-	for !parser.currentTokenIs(token.SEMICOLON) {
-		parser.nextToken()
-	}
-
 	return stmt
 }
 
@@ -151,10 +151,6 @@ func (parser *Parser) parseReturnStatement() *ast.ReturnStatement {
 	parser.nextToken()
 
 	stmt.ReturnValue = parser.parseExpression(LOWEST)
-
-	for !parser.currentTokenIs(token.SEMICOLON) {
-		parser.nextToken()
-	}
 
 	return stmt
 }
