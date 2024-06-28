@@ -131,6 +131,7 @@ func TestIfElseExpression(t *testing.T) {
 		{"if 0 { 10 } else { 5 }", 5},
 		{"if 1 > 2 { 10 } else { 5 }", 5},
 		{"if 1 < 2 { 10 } else { 5 }", 10},
+		{"let x = 10 if 1 < 2 { x = x - 2 x } else { 5 }", 8},
 		{"if 1 > 2 { 10 }", nil},
 	}
 
@@ -376,6 +377,54 @@ func TestStringAssignment(t *testing.T) {
 
 	if str.Value != "world" {
 		t.Fatalf("string has wrong value. got=%s", str.Value)
+	}
+}
+
+func TestForLoop(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{
+			`
+	let x = 5 
+	let total = 0
+	for x > 0 {
+		total = total + x	
+		x = x - 1
+	}
+
+	total
+`,
+			5 + 4 + 3 + 2 + 1,
+		},
+		{
+			`
+		let isRunning = true
+		let counter = 0
+
+		for isRunning {
+			if counter == 5 { isRunning = false } else { counter = counter + 1 }
+		}
+
+		counter
+`,
+			5,
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEvaluation(tt.input)
+
+		integer, ok := evaluated.(*object.Integer)
+
+		if !ok {
+			t.Fatalf("object is not Integer. got=%T (%+v)", evaluated, evaluated)
+		}
+
+		if integer.Value != tt.expected {
+			t.Fatalf("integer has wrong value. got=%d", integer.Value)
+		}
 	}
 }
 

@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"go++/token"
+	"strings"
 )
 
 type Statement interface {
@@ -82,9 +83,11 @@ func (bs *BlockStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(" {\n")
+	var statements []string
 	for _, s := range bs.Statements {
-		out.WriteString(s.String())
+		statements = append(statements, s.String())
 	}
+	out.WriteString(strings.Join(statements, "\n"))
 	out.WriteString("\n}")
 
 	return out.String()

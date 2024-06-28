@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"bytes"
 	"go++/token"
 )
 
@@ -71,6 +72,8 @@ func (lexer *Lexer) NextToken() token.Token {
 		tok = newToken(token.SEMICOLON, lexer.currentChar)
 	case ',':
 		tok = newToken(token.COMMA, lexer.currentChar)
+	case '.':
+		tok = newToken(token.DOT, lexer.currentChar)
 	case '(':
 		tok = newToken(token.LPAREN, lexer.currentChar)
 	case ')':
@@ -128,17 +131,37 @@ func (lexer *Lexer) readIdentifier() string {
 }
 
 func (lexer *Lexer) readString() string {
-	position := lexer.position + 1
+	//position := lexer.position + 1
+	var out bytes.Buffer
 
 	for {
 		lexer.readCharacter()
 
+		if lexer.currentChar == '\\' {
+			switch lexer.peekChar() {
+			case 'n':
+				out.WriteByte('\n')
+				lexer.readCharacter() // Skip the 'n'
+			case '\\':
+				out.WriteByte('\\')
+				lexer.readCharacter() // Skip the second '\'
+			case '"':
+				out.WriteByte('"')
+				lexer.readCharacter() // Skip the second '"'
+			default:
+				out.WriteByte(lexer.currentChar)
+			}
+			continue
+		}
+
 		if lexer.currentChar == '"' || lexer.currentChar == '0' {
 			break
 		}
+
+		out.WriteByte(lexer.currentChar)
 	}
 
-	return lexer.input[position:lexer.position]
+	return out.String()
 }
 
 func isLetter(character byte) bool {

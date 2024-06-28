@@ -131,6 +131,19 @@ func (parser *Parser) parseCallExpression(function ast.Expression) ast.Expressio
 	return expression
 }
 
+// expr <dot> expr() <dot> expr()
+func (parser *Parser) parseMemberAccessExpression(expr ast.Expression) ast.Expression {
+	expression := &ast.MemberAccessExpression{Token: parser.currentToken, Expression: expr}
+
+	if !parser.expectPeek(token.IDENTIFIER) {
+		return nil
+	}
+
+	expression.AccessedMember = ast.Identifier{Token: parser.currentToken, Value: parser.currentToken.Literal}
+
+	return expression
+}
+
 func (parser *Parser) parseCallArguments() []ast.Expression {
 	args := []ast.Expression{}
 

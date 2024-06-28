@@ -19,6 +19,7 @@ const (
 	GREATERTHAN = ">"
 
 	COMMA     = ","
+	DOT       = "."
 	SEMICOLON = ";"
 
 	LPAREN = "("
@@ -29,6 +30,7 @@ const (
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
 	RETURN   = "RETURN"
+	FOR      = "FOR"
 	TRUE     = "TRUE"
 	FALSE    = "FALSE"
 	IF       = "IF"

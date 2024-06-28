@@ -60,3 +60,21 @@ type StringLiteral struct {
 func (sl *StringLiteral) expressionNode()      {}
 func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
 func (sl *StringLiteral) String() string       { return sl.Value }
+
+type ForLoopLiteral struct {
+	Token     token.Token
+	Condition Expression
+	Body      *BlockStatement
+}
+
+func (fl *ForLoopLiteral) expressionNode()      {}
+func (fl *ForLoopLiteral) TokenLiteral() string { return fl.Token.Literal }
+func (fl *ForLoopLiteral) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("for ")
+	out.WriteString(fl.Condition.String())
+	out.WriteString(fl.Body.String())
+
+	return out.String()
+}

@@ -11,6 +11,7 @@ var Keywords = map[string]Type{
 	"fn":     FUNCTION,
 	"let":    LET,
 	"return": RETURN,
+	"for":    FOR,
 	"true":   TRUE,
 	"false":  FALSE,
 	"if":     IF,

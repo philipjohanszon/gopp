@@ -9,6 +9,7 @@ import (
 type Expression interface {
 	Node
 	expressionNode()
+	String() string
 }
 
 type PrefixExpression struct {
@@ -112,4 +113,24 @@ func (a *AssignExpression) expressionNode()      {}
 func (a *AssignExpression) TokenLiteral() string { return a.Token.Literal }
 func (a *AssignExpression) String() string {
 	return a.Assignee.String() + " = " + a.Value.String()
+}
+
+type MemberAccessExpression struct {
+	Token          token.Token
+	Expression     Expression
+	AccessedMember Identifier
+}
+
+func (ma *MemberAccessExpression) expressionNode()      {}
+func (ma *MemberAccessExpression) TokenLiteral() string { return ma.Token.Literal }
+func (ma *MemberAccessExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ma.Expression.String())
+	out.WriteString(".")
+	out.WriteString(ma.AccessedMember.Value)
+	out.WriteString(")")
+
+	return out.String()
 }

@@ -21,6 +21,7 @@ const (
 	PRODUCT
 	PREFIX
 	CALL
+	MEMBERACCESS
 )
 
 var precedences = map[token.Type]int{
@@ -34,6 +35,7 @@ var precedences = map[token.Type]int{
 	token.SLASH:       PRODUCT,
 	token.ASTERISK:    PRODUCT,
 	token.LPAREN:      CALL,
+	token.DOT:         MEMBERACCESS,
 }
 
 type Parser struct {
@@ -83,6 +85,7 @@ func New(lexer *lex.Lexer) *Parser {
 	parser.registerInfix(token.GREATERTHAN, parser.parseInfixExpression)
 
 	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
+	parser.registerInfix(token.DOT, parser.parseMemberAccessExpression)
 	parser.registerInfix(token.ASSIGN, parser.parseAssignExpression)
 
 	return parser
@@ -120,6 +123,8 @@ func (parser *Parser) parseStatement() ast.Statement {
 		return parser.parseLetStatement()
 	case token.RETURN:
 		return parser.parseReturnStatement()
+	case token.FOR:
+		return parser.parseForLoopLiteral()
 	default:
 		return parser.parseExpressionStatement()
 	}
@@ -153,6 +158,20 @@ func (parser *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt.ReturnValue = parser.parseExpression(LOWEST)
 
 	return stmt
+}
+
+func (parser *Parser) parseForLoopLiteral() *ast.ExpressionStatement {
+	stmt := &ast.ForLoopLiteral{Token: parser.currentToken}
+
+	parser.nextToken()
+
+	stmt.Condition = parser.parseExpression(LOWEST)
+
+	parser.nextToken()
+
+	stmt.Body = parser.parseBlockStatement()
+
+	return &ast.ExpressionStatement{Token: stmt.Token, Expression: stmt}
 }
 
 func (parser *Parser) parseExpressionStatement() *ast.ExpressionStatement {

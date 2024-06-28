@@ -28,6 +28,9 @@ if (5 < 10) {
 
 "foobar"
 "foo bar"
+for true {
+	"hello".ident()
+}
 `
 
 	tests := []struct {
@@ -109,6 +112,15 @@ if (5 < 10) {
 		{token.SEMICOLON, ";"},
 		{token.STRING, "foobar"},
 		{token.STRING, "foo bar"},
+		{token.FOR, "for"},
+		{token.TRUE, "true"},
+		{token.LBRACE, "{"},
+		{token.STRING, "hello"},
+		{token.DOT, "."},
+		{token.IDENTIFIER, "ident"},
+		{token.LPAREN, "("},
+		{token.RPAREN, ")"},
+		{token.RBRACE, "}"},
 		{token.EOF, ""},
 	}
 

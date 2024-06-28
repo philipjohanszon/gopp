@@ -30,7 +30,12 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 			return evaluated
 		}
 
-		env.Set(node.Assignee.Value, evaluated)
+		_, ok := env.ReAssign(node.Assignee.Value, evaluated)
+
+		if !ok {
+			return newError("identifier not found: %s", node.Assignee.Value)
+		}
+
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
 	case *ast.Identifier:
@@ -49,6 +54,17 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 		params := node.Parameters
 		body := node.Body
 		return &object.Function{Parameters: params, Body: body, Env: env}
+
+	case *ast.ForLoopLiteral:
+		outerEnv := object.NewEnclosedEnvironment(env)
+
+		for isObjectTruthy(Evaluate(node.Condition, env)) {
+			evaluated := evaluateBlockStatement(node.Body, outerEnv)
+
+			if isError(evaluated) {
+				return evaluated
+			}
+		}
 
 	case *ast.CallExpression:
 		function := Evaluate(node.Function, env)
@@ -160,16 +176,18 @@ func evaluateExpressions(expressions []ast.Expression, env *object.Environment) 
 }
 
 func applyFunction(fn object.Object, args []object.Object) object.Object {
-	function, ok := fn.(*object.Function)
+	switch fn.(type) {
+	case *object.Function:
+		extendedEnv := extendFunctionEnv(fn.(*object.Function), args)
+		evaluated := Evaluate(fn.(*object.Function).Body, extendedEnv)
 
-	if !ok {
-		return newError("%s is not a function", function.Type())
+		return unwrapReturnValue(evaluated)
+	case *object.Builtin:
+		return fn.(*object.Builtin).Fn(args...)
+	default:
+		return newError("not a function: %s", fn.Type())
+
 	}
-
-	extendedEnv := extendFunctionEnv(function, args)
-	evaluated := Evaluate(function.Body, extendedEnv)
-
-	return unwrapReturnValue(evaluated)
 }
 
 func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {

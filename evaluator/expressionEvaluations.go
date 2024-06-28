@@ -112,16 +112,22 @@ func evaluateIfExpression(node *ast.IfExpression, env *object.Environment) objec
 		return condition
 	}
 
+	outerEnv := object.NewEnclosedEnvironment(env)
+
 	if isObjectTruthy(condition) {
-		return Evaluate(node.Consequence, env)
+		return Evaluate(node.Consequence, outerEnv)
 	} else if node.Alternative != nil {
-		return Evaluate(node.Alternative, env)
+		return Evaluate(node.Alternative, outerEnv)
 	} else {
 		return NULL
 	}
 }
 
 func evaluateIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
+	if builtin, ok := builtins[node.Value]; ok {
+		return builtin
+	}
+
 	value, ok := env.Get(node.Value)
 
 	if !ok {

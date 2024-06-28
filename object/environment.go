@@ -30,3 +30,18 @@ func (e *Environment) Set(name string, obj Object) Object {
 	e.store[name] = obj
 	return obj
 }
+
+func (e *Environment) ReAssign(name string, obj Object) (Object, bool) {
+	_, ok := e.store[name]
+
+	if ok {
+		e.store[name] = obj
+		return obj, true
+	}
+
+	if e.outer != nil {
+		return e.outer.ReAssign(name, obj)
+	}
+
+	return nil, false
+}

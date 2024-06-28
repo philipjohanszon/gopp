@@ -439,6 +439,18 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 			"add(a + b + c * d / f + g)",
 			"add((((a + b) + ((c * d) / f)) + g))",
 		},
+		{
+			"a + b.value",
+			"(a + (b.value))",
+		},
+		{
+			"a + b.toInt()",
+			"(a + (b.toInt)())",
+		},
+		{
+			"add(a + b.toInt() + c * d / f + g)",
+			"add((((a + (b.toInt)()) + ((c * d) / f)) + g))",
+		},
 	}
 
 	for _, tt := range tests {
@@ -722,12 +734,13 @@ func testInfixExpression(t *testing.T, exp ast.Expression, left interface{}, ope
 
 func TestStringLiteralExpression(t *testing.T) {
 	tests := []struct {
-		input string
+		input    string
+		expected string
 	}{
-		{"helloWorld"},
-		{"whats up"},
-		{"Howdy World"},
-		{"H"},
+		{`"helloWorld"`, "helloWorld"},
+		{`"whats up"`, "whats up"},
+		{`"Howdy World"`, "Howdy World"},
+		{`"H"`, "H"},
 	}
 
 	for _, tt := range tests {
@@ -744,7 +757,7 @@ func TestStringLiteralExpression(t *testing.T) {
 			t.Fatalf("stmt.Expression is not ast.StringLiteral. got=%T", stmt.Expression)
 		}
 
-		if literal.Value != tt.input {
+		if literal.Value != tt.expected {
 			t.Errorf("literal.Value = %s, want=%s", literal.Value, tt.input)
 		}
 	}
@@ -786,6 +799,197 @@ func TestAssignExpressionParsing(t *testing.T) {
 
 		if exp.Assignee.String() != tt.assignee {
 			t.Errorf("exp.Assignee = %s, want=%s", exp.Assignee, tt.assignee)
+		}
+	}
+}
+
+func TestForStatementParsing(t *testing.T) {
+	input := `
+	for x != 0 {
+		"hello"
+	}
+`
+
+	lexer := lex.New(input)
+	parser := New(lexer)
+
+	program := parser.ParseProgram()
+	checkParserErrors(t, parser)
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.ExpressionStatement. got=%T", stmt.Expression)
+	}
+
+	exp, ok := stmt.Expression.(*ast.ForLoopLiteral)
+
+	if !ok {
+		t.Fatalf("stmt.Expression is not ast.ForLoopLiteral. got=%T", stmt.Expression)
+	}
+
+	if exp.Condition.String() != `(x != 0)` {
+		t.Fatalf("exp.Condition is wrong, want=%s got=%s", "(x != 0)", exp.Condition.String())
+	}
+
+	if exp.Body.String() != " {\nhello\n}" {
+		t.Fatalf("exp.Body is wrong, want=%s got=%s", " {\nhello\n}", exp.Body.String())
+	}
+}
+
+func TestMemberAccessExpressionParsing(t *testing.T) {
+	tests := []struct {
+		input string
+		valFn func(t *testing.T, exp *ast.ExpressionStatement) bool
+	}{
+		{
+			`"string".length`,
+			func(t *testing.T, stmt *ast.ExpressionStatement) bool {
+				exp, ok := stmt.Expression.(*ast.MemberAccessExpression)
+
+				if !ok {
+					t.Errorf("stmt.Expression is not ast.MemberAccessExpression. got=%T", stmt.Expression)
+				}
+
+				str, ok := exp.Expression.(*ast.StringLiteral)
+
+				if !ok {
+					t.Errorf("exp.Expression is not ast.StringLiteral. got=%T", exp)
+					return false
+				}
+
+				if str.Value != "string" {
+					t.Errorf("str.Value = %s, want=%s", str.Value, "string")
+					return false
+				}
+
+				if exp.AccessedMember.Value != "length" {
+					t.Errorf("Accessed member is not length. got=%s", exp.AccessedMember.Value)
+					return false
+				}
+
+				return true
+			},
+		},
+		{
+			`6.isNumber`,
+			func(t *testing.T, stmt *ast.ExpressionStatement) bool {
+				exp, ok := stmt.Expression.(*ast.MemberAccessExpression)
+
+				if !ok {
+					t.Errorf("stmt.Expression is not ast.MemberAccessExpression. got=%T", stmt.Expression)
+				}
+
+				integer, ok := exp.Expression.(*ast.IntegerLiteral)
+
+				if !ok {
+					t.Errorf("exp.Expression is not ast.IntegerLiteral. got=%T", exp)
+					return false
+				}
+
+				if integer.Value != 6 {
+					t.Errorf("str.Value = %d, want=%d", integer.Value, 6)
+					return false
+				}
+
+				if exp.AccessedMember.Value != "isNumber" {
+					t.Errorf("Accessed member is not isNumber. got=%s", exp.AccessedMember.Value)
+					return false
+				}
+
+				return true
+			},
+		},
+		{
+			`5 + 5.isNumber`,
+			func(t *testing.T, stmt *ast.ExpressionStatement) bool {
+				exp, ok := stmt.Expression.(*ast.InfixExpression)
+
+				if !ok {
+					t.Errorf("stmt.Expression is not ast.InfixExpression. got=%T", stmt.Expression)
+				}
+
+				member, ok := exp.Right.(*ast.MemberAccessExpression)
+
+				if !ok {
+					t.Errorf("exp.Right is not ast.MemberAccessExpression. got=%T", exp)
+					return false
+				}
+
+				integer, ok := member.Expression.(*ast.IntegerLiteral)
+
+				if !ok {
+					t.Errorf("exp.Expression is not ast.IntegerLiteral. got=%T", exp)
+					return false
+				}
+
+				if integer.Value != 5 {
+					t.Errorf("str.Value = %d, want=%d", integer.Value, 5)
+					return false
+				}
+
+				if member.AccessedMember.Value != "isNumber" {
+					t.Errorf("Accessed member is not isNumber. got=%s", member.AccessedMember.Value)
+					return false
+				}
+
+				return true
+			},
+		},
+		{
+			`foobar.length`,
+			func(t *testing.T, stmt *ast.ExpressionStatement) bool {
+				exp, ok := stmt.Expression.(*ast.MemberAccessExpression)
+
+				if !ok {
+					t.Errorf("stmt.Expression is not ast.MemberAccessExpression. got=%T", stmt.Expression)
+				}
+
+				ident, ok := exp.Expression.(*ast.Identifier)
+
+				if !ok {
+					t.Errorf("exp.Expression is not ast.Ident. got=%T", exp)
+					return false
+				}
+
+				if ident.Value != "foobar" {
+					t.Errorf("ident.value = %s, want=%s", ident.Value, "foobar")
+					return false
+				}
+
+				if exp.AccessedMember.Value != "length" {
+					t.Errorf("Accessed member is not length. got=%s", exp.AccessedMember.Value)
+					return false
+				}
+
+				return true
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		fmt.Println(tt.input)
+		lexer := lex.New(tt.input)
+		lexer2 := lex.New(tt.input)
+		parser := New(lexer)
+
+		fmt.Printf("Token: %+v\n", lexer2.NextToken())
+		fmt.Printf("Token: %+v\n", lexer2.NextToken())
+		fmt.Printf("Token: %+v\n", lexer2.NextToken())
+		fmt.Printf("Token: %+v\n", lexer2.NextToken())
+		fmt.Printf("Token: %+v\n", lexer2.NextToken())
+
+		program := parser.ParseProgram()
+		checkParserErrors(t, parser)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+
+		if !ok {
+			t.Fatalf("stmt.Expression is not ast.ExpressionStatement. got=%T", stmt.Expression)
+		}
+
+		if !tt.valFn(t, stmt) {
+			return
 		}
 	}
 }
