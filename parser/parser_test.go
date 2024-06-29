@@ -965,19 +965,48 @@ func TestMemberAccessExpressionParsing(t *testing.T) {
 				return true
 			},
 		},
+
+		{
+			`foobar.length()`,
+			func(t *testing.T, stmt *ast.ExpressionStatement) bool {
+				call, ok := stmt.Expression.(*ast.CallExpression)
+
+				if !ok {
+					t.Errorf("stmt.Expression is not ast.CallExpression. got=%T", stmt.Expression)
+				}
+
+				exp, ok := call.Function.(*ast.MemberAccessExpression)
+
+				if !ok {
+					t.Errorf("stmt.Function is not ast.MemberAccessExpression. got=%T", stmt.Expression)
+				}
+
+				ident, ok := exp.Expression.(*ast.Identifier)
+
+				if !ok {
+					t.Errorf("exp.Expression is not ast.Ident. got=%T", exp)
+					return false
+				}
+
+				if ident.Value != "foobar" {
+					t.Errorf("ident.value = %s, want=%s", ident.Value, "foobar")
+					return false
+				}
+
+				if exp.AccessedMember.Value != "length" {
+					t.Errorf("Accessed member is not length. got=%s", exp.AccessedMember.Value)
+					return false
+				}
+
+				return true
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		fmt.Println(tt.input)
 		lexer := lex.New(tt.input)
-		lexer2 := lex.New(tt.input)
 		parser := New(lexer)
-
-		fmt.Printf("Token: %+v\n", lexer2.NextToken())
-		fmt.Printf("Token: %+v\n", lexer2.NextToken())
-		fmt.Printf("Token: %+v\n", lexer2.NextToken())
-		fmt.Printf("Token: %+v\n", lexer2.NextToken())
-		fmt.Printf("Token: %+v\n", lexer2.NextToken())
 
 		program := parser.ParseProgram()
 		checkParserErrors(t, parser)
