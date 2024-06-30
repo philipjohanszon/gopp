@@ -12,9 +12,10 @@ type Statement interface {
 }
 
 type LetStatement struct {
-	Token token.Token
-	Name  *Identifier
-	Value Expression
+	Token     token.Token
+	Name      *Identifier
+	Value     Expression
+	IsMutable bool
 }
 
 func (ls *LetStatement) statementNode() {}

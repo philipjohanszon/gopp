@@ -133,6 +133,11 @@ func (parser *Parser) parseStatement() ast.Statement {
 func (parser *Parser) parseLetStatement() *ast.LetStatement {
 	stmt := &ast.LetStatement{Token: parser.currentToken}
 
+	if parser.peekTokenIs(token.MUT) {
+		stmt.IsMutable = true
+		parser.nextToken()
+	}
+
 	if !parser.expectPeek(token.IDENTIFIER) {
 		return nil
 	}

@@ -131,7 +131,7 @@ func TestIfElseExpression(t *testing.T) {
 		{"if 0 { 10 } else { 5 }", 5},
 		{"if 1 > 2 { 10 } else { 5 }", 5},
 		{"if 1 < 2 { 10 } else { 5 }", 10},
-		{"let x = 10 if 1 < 2 { x = x - 2 x } else { 5 }", 8},
+		{"let mut x = 10 if 1 < 2 { x = x - 2 x } else { 5 }", 8},
 		{"if 1 > 2 { 10 }", nil},
 	}
 
@@ -237,6 +237,10 @@ func TestErrorHandling(t *testing.T) {
 		{
 			`"test" * "hi"`,
 			"unknown operator: STRING * STRING",
+		},
+		{
+			`let x = 0 x = 5`,
+			"ERROR: Can't reassign immutable object: x",
 		},
 	}
 
@@ -345,7 +349,7 @@ func TestStringConcatenation(t *testing.T) {
 
 func TestIntegerAssignment(t *testing.T) {
 	input := `
-	let x = 0
+	let mut x = 0
 	x = 3
 	x
 `
@@ -364,7 +368,7 @@ func TestIntegerAssignment(t *testing.T) {
 
 func TestStringAssignment(t *testing.T) {
 	input := `
-	let x = "hello"
+	let mut x = "hello"
 	x = "world"
 	x	
 `
@@ -387,8 +391,8 @@ func TestForLoop(t *testing.T) {
 	}{
 		{
 			`
-	let x = 5 
-	let total = 0
+	let mut x = 5 
+	let mut total = 0
 	for x > 0 {
 		total = total + x	
 		x = x - 1
@@ -400,8 +404,8 @@ func TestForLoop(t *testing.T) {
 		},
 		{
 			`
-		let isRunning = true
-		let counter = 0
+		let mut isRunning = true
+		let mut counter = 0
 
 		for isRunning {
 			if counter == 5 { isRunning = false } else { counter = counter + 1 }

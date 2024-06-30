@@ -29,6 +29,7 @@ const (
 
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
+	MUT      = "MUT"
 	RETURN   = "RETURN"
 	FOR      = "FOR"
 	TRUE     = "TRUE"

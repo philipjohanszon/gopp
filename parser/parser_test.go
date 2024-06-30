@@ -11,11 +11,13 @@ func TestLetStatements(t *testing.T) {
 	tests := []struct {
 		input              string
 		expectedIdentifier string
+		mut                bool
 		expectedValue      interface{}
 	}{
-		{"let x = 5", "x", 5},
-		{"let y = true", "y", true},
-		{"let foobar = y", "foobar", "y"},
+		{"let x = 5", "x", false, 5},
+		{"let mut x = 5", "x", true, 5},
+		{"let y = true", "y", false, true},
+		{"let foobar = y", "foobar", false, "y"},
 	}
 
 	for _, tt := range tests {
@@ -30,7 +32,7 @@ func TestLetStatements(t *testing.T) {
 		}
 
 		stmt := program.Statements[0]
-		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
+		if !testLetStatement(t, stmt, tt.expectedIdentifier, tt.mut) {
 			return
 		}
 
@@ -41,7 +43,7 @@ func TestLetStatements(t *testing.T) {
 	}
 }
 
-func testLetStatement(t *testing.T, stmt ast.Statement, name string) bool {
+func testLetStatement(t *testing.T, stmt ast.Statement, name string, mut bool) bool {
 	if stmt.TokenLiteral() != "let" {
 		t.Errorf("stmt.TokenLiteral not 'let'. got=%q", stmt.TokenLiteral())
 		return false
@@ -56,6 +58,11 @@ func testLetStatement(t *testing.T, stmt ast.Statement, name string) bool {
 
 	if letStmt.Name.Value != name {
 		t.Errorf("letStmt.Name.Value not %s. got=%s", name, letStmt.Name.Value)
+		return false
+	}
+
+	if letStmt.IsMutable != mut {
+		t.Errorf("letStmt.IsMutable not %t. got=%v", mut, letStmt.IsMutable)
 		return false
 	}
 

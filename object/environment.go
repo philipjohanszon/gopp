@@ -1,12 +1,17 @@
 package object
 
+type EnvironmentObject struct {
+	IsMutable bool
+	Object    Object
+}
+
 type Environment struct {
-	store map[string]Object
+	store map[string]*EnvironmentObject
 	outer *Environment
 }
 
 func NewEnvironment() *Environment {
-	s := make(map[string]Object)
+	s := make(map[string]*EnvironmentObject)
 	return &Environment{store: s, outer: nil}
 }
 
@@ -17,25 +22,35 @@ func NewEnclosedEnvironment(environment *Environment) *Environment {
 }
 
 func (e *Environment) Get(name string) (Object, bool) {
-	obj, ok := e.store[name]
+	envObj, ok := e.store[name]
 
 	if !ok && e.outer != nil {
-		obj, ok = e.outer.Get(name)
+		obj, outerOk := e.outer.Get(name)
+
+		return obj, outerOk
 	}
 
-	return obj, ok
+	if !ok {
+		return nil, false
+	}
+
+	return envObj.Object, ok
 }
 
-func (e *Environment) Set(name string, obj Object) Object {
-	e.store[name] = obj
+func (e *Environment) Set(name string, obj Object, isMutable bool) Object {
+	e.store[name] = &EnvironmentObject{isMutable, obj}
 	return obj
 }
 
 func (e *Environment) ReAssign(name string, obj Object) (Object, bool) {
-	_, ok := e.store[name]
+	envObj, ok := e.store[name]
 
 	if ok {
-		e.store[name] = obj
+		if !envObj.IsMutable {
+			return &Error{Message: "ERROR: Can't reassign immutable object: " + name}, false
+		}
+
+		e.store[name] = &EnvironmentObject{true, obj}
 		return obj, true
 	}
 

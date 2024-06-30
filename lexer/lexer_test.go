@@ -8,6 +8,7 @@ import (
 func TestNextToken(t *testing.T) {
 	input := `let five = 5;
 let ten = 10;
+let mut ten = 10;
 
 let add = fn(x, y) {
 	x + y;
@@ -43,6 +44,12 @@ for true {
 		{token.INTEGER, "5"},
 		{token.SEMICOLON, ";"},
 		{token.LET, "let"},
+		{token.IDENTIFIER, "ten"},
+		{token.ASSIGN, "="},
+		{token.INTEGER, "10"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.MUT, "mut"},
 		{token.IDENTIFIER, "ten"},
 		{token.ASSIGN, "="},
 		{token.INTEGER, "10"},

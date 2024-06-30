@@ -10,6 +10,7 @@ type Token struct {
 var Keywords = map[string]Type{
 	"fn":     FUNCTION,
 	"let":    LET,
+	"mut":    MUT,
 	"return": RETURN,
 	"for":    FOR,
 	"true":   TRUE,

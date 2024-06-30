@@ -29,7 +29,11 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 			return evaluated
 		}
 
-		_, ok := env.ReAssign(node.Assignee.Value, evaluated)
+		obj, ok := env.ReAssign(node.Assignee.Value, evaluated)
+
+		if isError(obj) {
+			return obj
+		}
 
 		if !ok {
 			return newError("identifier not found: %s", node.Assignee.Value)
@@ -47,7 +51,7 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 			return value
 		}
 
-		env.Set(node.Name.Value, value)
+		env.Set(node.Name.Value, value, node.IsMutable)
 
 	case *ast.FunctionLiteral:
 		params := node.Parameters
@@ -224,7 +228,7 @@ func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Enviro
 	env := object.NewEnclosedEnvironment(fn.Env)
 
 	for paramIdx, param := range fn.Parameters {
-		env.Set(param.Value, args[paramIdx])
+		env.Set(param.Value, args[paramIdx], true)
 	}
 
 	return env
