@@ -7,21 +7,21 @@ import (
 )
 
 var builtins = map[string]*object.Builtin{
-	"println": &object.Builtin{
+	"println": {
 		Fn: func(args ...object.Object) object.Object {
 			fmt.Println(getStringFromArgs(args...))
 
 			return NULL
 		},
 	},
-	"print": &object.Builtin{
+	"print": {
 		Fn: func(args ...object.Object) object.Object {
 			fmt.Print(getStringFromArgs(args...))
 
 			return NULL
 		},
 	},
-	"printf": &object.Builtin{
+	"printf": {
 		Fn: func(args ...object.Object) object.Object {
 			format, ok := args[0].(*object.String)
 

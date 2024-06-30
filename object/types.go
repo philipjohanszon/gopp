@@ -9,4 +9,5 @@ const (
 	FUNCTION = "FUNCTION"
 	STRING   = "STRING"
 	BUILTIN  = "BUILTIN"
+	METHOD   = "METHOD"
 )

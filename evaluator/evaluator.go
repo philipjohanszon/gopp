@@ -1,15 +1,14 @@
 package evaluator
 
 import (
-	"fmt"
 	"go++/ast"
 	"go++/object"
 )
 
 var (
-	NULL  = &object.Null{}
-	TRUE  = &object.Boolean{Value: true}
-	FALSE = &object.Boolean{Value: false}
+	NULL  = newNull()
+	TRUE  = newBoolean(true)
+	FALSE = newBoolean(false)
 )
 
 func Evaluate(node ast.Node, env *object.Environment) object.Object {
@@ -20,9 +19,9 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 		return Evaluate(node.Expression, env)
 
 	case *ast.IntegerLiteral:
-		return &object.Integer{Value: node.Value}
+		return newInteger(node.Value)
 	case *ast.StringLiteral:
-		return &object.String{Value: node.Value}
+		return newString(node.Value)
 	case *ast.AssignExpression:
 		evaluated := Evaluate(node.Value, env)
 
@@ -53,7 +52,7 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 	case *ast.FunctionLiteral:
 		params := node.Parameters
 		body := node.Body
-		return &object.Function{Parameters: params, Body: body, Env: env}
+		return newFunction(params, body, env)
 
 	case *ast.ForLoopLiteral:
 		outerEnv := object.NewEnclosedEnvironment(env)
@@ -105,6 +104,31 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 
 		return evaluateInfixExpression(node.Operator, left, right)
 
+	case *ast.MemberAccessExpression:
+		left := Evaluate(node.Expression, env)
+
+		if isError(left) {
+			return left
+		}
+
+		val, ok := left.GetMembers().Get(node.AccessedMember.Value)
+
+		if !ok {
+			return newError("Error: %s is not member of %s", node.AccessedMember.Value, left.Inspect())
+		}
+
+		if isError(val) {
+			return val
+		}
+
+		if method, ok := val.(*object.BuiltinMethod); ok {
+			method.It = left
+
+			return method
+		}
+
+		return val
+
 	case *ast.BlockStatement:
 		return evaluateBlockStatement(node, env)
 
@@ -118,7 +142,7 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 			return value
 		}
 
-		return &object.ReturnValue{Value: value}
+		return newReturnValue(value)
 	}
 
 	return nil
@@ -184,9 +208,15 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 		return unwrapReturnValue(evaluated)
 	case *object.Builtin:
 		return fn.(*object.Builtin).Fn(args...)
+	case *object.BuiltinMethod:
+		arguments := make([]object.Object, 1)
+
+		arguments[0] = fn.(*object.BuiltinMethod).It
+		arguments = append(arguments, args...)
+
+		return fn.(*object.BuiltinMethod).Fn(arguments...)
 	default:
 		return newError("not a function: %s", fn.Type())
-
 	}
 }
 
@@ -227,10 +257,6 @@ func isObjectTruthy(obj object.Object) bool {
 	default:
 		return true
 	}
-}
-
-func newError(format string, a ...interface{}) *object.Error {
-	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }
 
 func isError(obj object.Object) bool {
