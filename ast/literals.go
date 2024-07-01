@@ -24,6 +24,29 @@ func (bl *Boolean) expressionNode()      {}
 func (bl *Boolean) TokenLiteral() string { return bl.Token.Literal }
 func (bl *Boolean) String() string       { return bl.Token.Literal }
 
+type Array struct {
+	Token  token.Token
+	Values []Expression
+}
+
+func (a *Array) expressionNode()      {}
+func (a *Array) TokenLiteral() string { return a.Token.Literal }
+func (a *Array) String() string {
+	var out bytes.Buffer
+
+	items := []string{}
+
+	for _, value := range a.Values {
+		items = append(items, value.String())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(items, ", "))
+	out.WriteString("]")
+
+	return out.String()
+}
+
 type FunctionLiteral struct {
 	Token      token.Token
 	Parameters []*Identifier

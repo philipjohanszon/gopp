@@ -1011,7 +1011,6 @@ func TestMemberAccessExpressionParsing(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		fmt.Println(tt.input)
 		lexer := lex.New(tt.input)
 		parser := New(lexer)
 
@@ -1027,6 +1026,82 @@ func TestMemberAccessExpressionParsing(t *testing.T) {
 		if !tt.valFn(t, stmt) {
 			return
 		}
+	}
+}
+
+func TestArrayLiteral(t *testing.T) {
+	input := `let array = [2, 4, 5*5]`
+
+	lexer := lex.New(input)
+	parser := New(lexer)
+
+	program := parser.ParseProgram()
+	checkParserErrors(t, parser)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("len(program.Statements) = %d, want=%d", len(program.Statements), 1)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.LetStatement)
+
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.LetStatement. got=%T", program.Statements[0])
+	}
+
+	arr, ok := stmt.Value.(*ast.Array)
+
+	if !ok {
+		t.Fatalf("stmt.Value is not ast.Array. got=%T", stmt.Value)
+	}
+
+	if len(arr.Values) != 3 {
+		t.Fatalf("len(arr.Values) = %d, want=%d", len(arr.Values), 3)
+	}
+
+	if arr.Values[0].String() != "2" {
+		t.Errorf("arr.Values[0] = %s, want=%s", arr.Values[0].String(), "2")
+	}
+
+	if arr.Values[1].String() != "4" {
+		t.Errorf("arr.Values[1] = %s, want=%s", arr.Values[1].String(), "4")
+	}
+
+	if arr.Values[2].String() != "(5 * 5)" {
+		t.Errorf("arr.Values[2] = %s, want=%s", arr.Values[2].String(), "(5 * 5)")
+	}
+}
+
+func TestArrayAccess(t *testing.T) {
+	input := `array[4*2]`
+
+	lexer := lex.New(input)
+	parser := New(lexer)
+
+	program := parser.ParseProgram()
+	checkParserErrors(t, parser)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("len(program.Statements) = %d, want=%d", len(program.Statements), 1)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement . got=%T", program.Statements[0])
+	}
+
+	access, ok := stmt.Expression.(*ast.ArrayAccessExpression)
+
+	if !ok {
+		t.Fatalf("stmt.Value is not ast.ArrayAccessExpression. got=%T", stmt.Expression)
+	}
+
+	if access.Expression.String() != "array" {
+		t.Errorf("access.Expression.String() = %s, want=%s", access.Expression.String(), "array")
+	}
+
+	if access.Index.String() != "(4 * 2)" {
+		t.Errorf("access.Index.String() = %s, want=%s", access.Index.String(), "(4 * 2)")
 	}
 }
 

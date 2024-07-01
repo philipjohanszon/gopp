@@ -32,6 +32,8 @@ if (5 < 10) {
 for true {
 	"hello".ident()
 }
+
+["hey", 1, 3]
 `
 
 	tests := []struct {
@@ -128,6 +130,13 @@ for true {
 		{token.LPAREN, "("},
 		{token.RPAREN, ")"},
 		{token.RBRACE, "}"},
+		{token.LBRACKET, "["},
+		{token.STRING, "hey"},
+		{token.COMMA, ","},
+		{token.INTEGER, "1"},
+		{token.COMMA, ","},
+		{token.INTEGER, "3"},
+		{token.RBRACKET, "]"},
 		{token.EOF, ""},
 	}
 

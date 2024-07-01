@@ -30,6 +30,13 @@ func newFunction(parameters []*ast.Identifier, body *ast.BlockStatement, env *ob
 	return &object.Function{Parameters: parameters, Body: body, Env: env}
 }
 
+func newArray(values []object.Object) *object.Array {
+	return &object.Array{
+		Values:  values,
+		Members: object.ObjectMembers{Members: BuiltinArrayMethods, MutableMembers: false},
+	}
+}
+
 func newError(format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }

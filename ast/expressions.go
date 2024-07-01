@@ -134,3 +134,19 @@ func (ma *MemberAccessExpression) String() string {
 
 	return out.String()
 }
+
+type ArrayAccessExpression struct {
+	Token      token.Token
+	Expression Expression
+	Index      Expression
+}
+
+func (aa *ArrayAccessExpression) expressionNode()      {}
+func (aa *ArrayAccessExpression) TokenLiteral() string { return aa.Token.Literal }
+func (aa *ArrayAccessExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(aa.Expression.String() + "[" + aa.Index.String() + "]")
+
+	return out.String()
+}

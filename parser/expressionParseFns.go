@@ -126,7 +126,7 @@ func (parser *Parser) parseFunctionLiteral() ast.Expression {
 
 func (parser *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	expression := &ast.CallExpression{Token: parser.currentToken, Function: function}
-	expression.Arguments = parser.parseCallArguments()
+	expression.Arguments = parser.parseCallArguments(token.RPAREN)
 
 	return expression
 }
@@ -144,10 +144,10 @@ func (parser *Parser) parseMemberAccessExpression(expr ast.Expression) ast.Expre
 	return expression
 }
 
-func (parser *Parser) parseCallArguments() []ast.Expression {
+func (parser *Parser) parseCallArguments(endingToken token.Type) []ast.Expression {
 	args := []ast.Expression{}
 
-	if parser.peekTokenIs(token.RPAREN) {
+	if parser.peekTokenIs(endingToken) {
 		parser.nextToken()
 		return args
 	}
@@ -161,7 +161,7 @@ func (parser *Parser) parseCallArguments() []ast.Expression {
 		args = append(args, parser.parseExpression(LOWEST))
 	}
 
-	if !parser.expectPeek(token.RPAREN) {
+	if !parser.expectPeek(endingToken) {
 		return nil
 	}
 
@@ -189,4 +189,27 @@ func (parser *Parser) parseAssignExpression(exp ast.Expression) ast.Expression {
 	expression.Value = parser.parseExpression(LOWEST)
 
 	return expression
+}
+
+func (parser *Parser) parseArray() ast.Expression {
+	arr := &ast.Array{Token: parser.currentToken}
+	arr.Values = parser.parseCallArguments(token.RBRACKET)
+
+	return arr
+}
+
+func (parser *Parser) parseArrayAccess(array ast.Expression) ast.Expression {
+	expr := &ast.ArrayAccessExpression{
+		Token:      parser.currentToken,
+		Expression: array,
+		Index:      nil,
+	}
+
+	parser.nextToken()
+
+	expr.Index = parser.parseExpression(LOWEST)
+
+	parser.nextToken()
+
+	return expr
 }

@@ -36,6 +36,7 @@ var precedences = map[token.Type]int{
 	token.ASTERISK:    PRODUCT,
 	token.LPAREN:      CALL,
 	token.DOT:         MEMBERACCESS,
+	token.LBRACKET:    MEMBERACCESS,
 }
 
 type Parser struct {
@@ -68,6 +69,7 @@ func New(lexer *lex.Lexer) *Parser {
 	parser.registerPrefix(token.MINUS, parser.parsePrefixExpression)
 
 	parser.registerPrefix(token.LPAREN, parser.parseGroupedExpression)
+	parser.registerPrefix(token.LBRACKET, parser.parseArray)
 
 	parser.registerPrefix(token.IF, parser.parseIfExpression)
 	parser.registerPrefix(token.FUNCTION, parser.parseFunctionLiteral)
@@ -85,6 +87,7 @@ func New(lexer *lex.Lexer) *Parser {
 	parser.registerInfix(token.GREATERTHAN, parser.parseInfixExpression)
 
 	parser.registerInfix(token.LPAREN, parser.parseCallExpression)
+	parser.registerInfix(token.LBRACKET, parser.parseArrayAccess)
 	parser.registerInfix(token.DOT, parser.parseMemberAccessExpression)
 	parser.registerInfix(token.ASSIGN, parser.parseAssignExpression)
 

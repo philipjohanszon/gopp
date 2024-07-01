@@ -3,6 +3,7 @@ package object
 const (
 	INTEGER  = "INTEGER"
 	BOOLEAN  = "BOOLEAN"
+	ARRAY    = "ARRAY"
 	NULL     = "NULL"
 	RETURN   = "RETURN"
 	ERROR    = "ERROR"

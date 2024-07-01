@@ -22,6 +22,14 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 		return newInteger(node.Value)
 	case *ast.StringLiteral:
 		return newString(node.Value)
+	case *ast.Array:
+		elements := make([]object.Object, len(node.Values))
+
+		for k, v := range node.Values {
+			elements[k] = Evaluate(v, env)
+		}
+
+		return newArray(elements)
 	case *ast.AssignExpression:
 		evaluated := Evaluate(node.Value, env)
 
@@ -132,6 +140,28 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 		}
 
 		return val
+
+	case *ast.ArrayAccessExpression:
+		index := Evaluate(node.Index, env)
+		array := Evaluate(node.Expression, env)
+
+		if isError(array) {
+			return array
+		}
+
+		if isError(index) {
+			return index
+		}
+
+		if _, ok := array.(*object.Array); !ok {
+			return newError("ERROR: %s is not an array", array.Inspect())
+		}
+
+		if _, ok := index.(*object.Integer); !ok {
+			return newError("ERROR: index: %s is not an integer", index.Inspect())
+		}
+
+		return array.(*object.Array).GetIndex(int(index.(*object.Integer).Value))
 
 	case *ast.BlockStatement:
 		return evaluateBlockStatement(node, env)
