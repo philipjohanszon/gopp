@@ -70,3 +70,16 @@ type BuiltinMethod struct {
 func (b *BuiltinMethod) Type() Type                 { return METHOD }
 func (b *BuiltinMethod) Inspect() string            { return "method" }
 func (b *BuiltinMethod) GetMembers() *ObjectMembers { return nil }
+
+type MethodIteratorSetupFunction func(args ...Object) ([]Integer, []Object, Object)
+
+type BuiltinIteratorMethod struct {
+	Setup    MethodIteratorSetupFunction
+	Keys     []Integer
+	Values   []Object
+	ResultFn MethodFunction
+}
+
+func (b *BuiltinIteratorMethod) Type() Type                 { return METHOD }
+func (b *BuiltinIteratorMethod) Inspect() string            { return "method" }
+func (b *BuiltinIteratorMethod) GetMembers() *ObjectMembers { return nil }

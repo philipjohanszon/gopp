@@ -66,17 +66,3 @@ var BuiltinNumberMethods = map[string]object.Object{
 		return args[0]
 	}},
 }
-
-var BuiltinArrayMethods = map[string]object.Object{
-	"length": &object.BuiltinMethod{Fn: func(args ...object.Object) object.Object {
-		if len(args) != 1 {
-			return newError("ERROR: No arguments should be given to 'length'")
-		}
-
-		if _, ok := args[0].(*object.Array); !ok {
-			return newError("ERROR: First argument must be a array")
-		}
-
-		return &object.Integer{Value: int64(len(args[0].(*object.Array).Values))}
-	}},
-}

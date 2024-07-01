@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"go++/ast"
+	"go++/methods"
 	"go++/object"
 )
 
@@ -33,7 +34,7 @@ func newFunction(parameters []*ast.Identifier, body *ast.BlockStatement, env *ob
 func newArray(values []object.Object) *object.Array {
 	return &object.Array{
 		Values:  values,
-		Members: object.ObjectMembers{Members: BuiltinArrayMethods, MutableMembers: false},
+		Members: object.ObjectMembers{Members: methods.BuiltinArrayMethods(&arrayHelperImpl{}), MutableMembers: false},
 	}
 }
 
