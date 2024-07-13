@@ -105,7 +105,7 @@ func (c *CallExpression) String() string {
 
 type AssignExpression struct {
 	Token    token.Token
-	Assignee Identifier
+	Assignee Expression
 	Value    Expression
 }
 

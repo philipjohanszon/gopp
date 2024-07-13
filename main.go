@@ -17,13 +17,11 @@ func main() {
 		return
 	}
 
-	result, err := runFromFile(os.Args[1])
+	_, err := runFromFile(os.Args[1])
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
-
-	fmt.Println(result.Inspect())
 }
 
 func runFromFile(file string) (object.Object, error) {
@@ -41,3 +39,25 @@ func runFromFile(file string) (object.Object, error) {
 
 	return evaluator.Evaluate(program, env), nil
 }
+
+/*
+func runFromMultipleFiles() (object.Object, error) {
+	err := filepath.Walk(".",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if splits := strings.Split(path, "."); splits[1] == "gopp" {
+
+			}
+
+			fmt.Println(path, info.Size())
+			return nil
+		})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+*/

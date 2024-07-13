@@ -175,14 +175,7 @@ func (parser *Parser) parseStringLiteral() ast.Expression {
 func (parser *Parser) parseAssignExpression(exp ast.Expression) ast.Expression {
 	expression := &ast.AssignExpression{Token: parser.currentToken}
 
-	identifier, ok := exp.(*ast.Identifier)
-
-	if !ok {
-		parser.appendError("Was expecting an identifier, got %T", exp)
-		return nil
-	}
-
-	expression.Assignee = *identifier
+	expression.Assignee = exp
 
 	parser.nextToken()
 

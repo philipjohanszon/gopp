@@ -1,13 +1,14 @@
-
-
 let max = fn (x, y) { return if x > y { x } else { y } }
+let min = fn (x, y) { return if y < x { x } else { y } }
+let abs = fn (x) { return if x > 0 { x } else { -x } }
+let square = fn (x) { return x * x }
+let invert = fn (x) { return -x }
 
-println(max(2, 4))
-println(max(max(5, 2), max(6, 3)))
-println(max(2, fn (x) { x + 3 }(1)))
+let x = min(max(abs(invert(-3)), square(2)), abs(-6))
 
-let age = 20
+printf("%s\n", x)
 
-age.add(-1).add(-1).add(-1)
+let mut arr = ["hello", "world"]
+arr[1] = "gopp"
 
-println("Age: " + age)
+arr.forEach(fn (k, v) { println(v) })

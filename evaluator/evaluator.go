@@ -37,15 +37,50 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 			return evaluated
 		}
 
-		obj, ok := env.ReAssign(node.Assignee.Value, evaluated)
+		if identifier, ok := node.Assignee.(*ast.Identifier); ok {
+			obj, ok := env.ReAssign(identifier.Value, evaluated)
 
-		if isError(obj) {
-			return obj
+			if !ok {
+				return newError("identifier not found: %s", identifier.Value)
+			}
+
+			if isError(obj) {
+				return obj
+			}
 		}
 
-		if !ok {
-			return newError("identifier not found: %s", node.Assignee.Value)
+		if arrayAccess, ok := node.Assignee.(*ast.ArrayAccessExpression); ok {
+			evaluatedArray := Evaluate(arrayAccess.Expression, env)
+			evaluatedIndex := Evaluate(arrayAccess.Index, env)
+
+			if isError(evaluatedArray) {
+				return evaluatedArray
+			}
+
+			if isError(evaluatedIndex) {
+				return evaluatedIndex
+			}
+
+			array, ok := evaluatedArray.(*object.Array)
+
+			if !ok {
+				return newError("not an array: %s", array.Type())
+			}
+
+			index, ok := evaluatedIndex.(*object.Integer)
+
+			if !ok {
+				return newError("not an integer: %s", index.Type())
+			}
+
+			if int(index.Value) > len(array.Values) {
+				return newError("index out of range: %d", index.Value)
+			}
+
+			array.Values[index.Value] = evaluated
 		}
+
+		return NULL
 
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
