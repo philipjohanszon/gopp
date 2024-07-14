@@ -20,7 +20,7 @@ func main() {
 	_, err := runFromFile(os.Args[1])
 
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, err)
 	}
 }
 
