@@ -8,11 +8,11 @@ import (
 )
 
 func newString(value string) *object.String {
-	return &object.String{Value: value, Members: object.ObjectMembers{Members: BuiltinStringMethods, MutableMembers: false}}
+	return &object.String{Value: value, Members: object.ObjectMembers{Members: methods.GetBuiltinStringMethods(&stringHelperImpl{}), MutableMembers: false}}
 }
 
 func newInteger(value int64) *object.Integer {
-	return &object.Integer{Value: value, Members: object.ObjectMembers{Members: BuiltinNumberMethods, MutableMembers: false}}
+	return &object.Integer{Value: value, Members: object.ObjectMembers{Members: methods.GetBuiltinNumberMethods(&numberHelperImpl{}), MutableMembers: false}}
 }
 
 func newBoolean(value bool) *object.Boolean {
@@ -34,7 +34,7 @@ func newFunction(parameters []*ast.Identifier, body *ast.BlockStatement, env *ob
 func newArray(values []object.Object) *object.Array {
 	return &object.Array{
 		Values:  values,
-		Members: object.ObjectMembers{Members: methods.BuiltinArrayMethods(&arrayHelperImpl{}), MutableMembers: false},
+		Members: object.ObjectMembers{Members: methods.GetBuiltinArrayMethods(&arrayHelperImpl{}), MutableMembers: false},
 	}
 }
 

@@ -456,6 +456,30 @@ func TestMethods(t *testing.T) {
 	}
 }
 
+func TestBuiltinMethods(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`"hello".length()`, "5"},
+		{`5.add(3)`, "8"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEvaluation(tt.input)
+
+		integer, ok := evaluated.(*object.Integer)
+
+		if !ok {
+			t.Fatalf("object is not Integer. got=%T (%+v)", evaluated, evaluated)
+		}
+
+		if integer.Inspect() != tt.expected {
+			t.Fatalf("integer has wrong value. want=%s got=%s", tt.expected, integer.Inspect())
+		}
+	}
+}
+
 func testEvaluation(input string) object.Object {
 	lexer := lex.New(input)
 	parser := parse.New(lexer)

@@ -12,7 +12,7 @@ type ArrayHelper interface {
 	GetNull() *object.Null
 }
 
-var BuiltinArrayMethods = func(helper ArrayHelper) map[string]object.Object {
+func GetBuiltinArrayMethods(helper ArrayHelper) map[string]object.Object {
 	return map[string]object.Object{
 		"length": &object.BuiltinMethod{Fn: func(args ...object.Object) object.Object {
 			if len(args) != 1 {
