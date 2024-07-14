@@ -37,7 +37,13 @@ func runFromFile(file string) (object.Object, error) {
 	program := pars.ParseProgram()
 	env := object.NewEnvironment()
 
-	return evaluator.Evaluate(program, env), nil
+	obj := evaluator.Evaluate(program, env)
+
+	if errorObj, ok := obj.(*object.Error); ok {
+		return obj, errors.New(errorObj.Message)
+	}
+
+	return obj, nil
 }
 
 /*

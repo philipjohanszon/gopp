@@ -136,3 +136,54 @@ func evaluateIdentifier(node *ast.Identifier, env *object.Environment) object.Ob
 
 	return value
 }
+
+func assignArray(arrayAccess *ast.ArrayAccessExpression, evaluated object.Object, env *object.Environment) (object.Object, bool) {
+	evaluatedArray := Evaluate(arrayAccess.Expression, env)
+	evaluatedIndex := Evaluate(arrayAccess.Index, env)
+
+	if isError(evaluatedArray) {
+		return evaluatedArray, true
+	}
+
+	if isError(evaluatedIndex) {
+		return evaluatedIndex, true
+	}
+
+	array, ok := evaluatedArray.(*object.Array)
+
+	if !ok {
+		return newError("not an array: %s", array.Type()), true
+	}
+
+	index, ok := evaluatedIndex.(*object.Integer)
+
+	if !ok {
+		return newError("not an integer: %s", index.Type()), true
+	}
+
+	if int(index.Value) > len(array.Values) {
+		return newError("index out of range: %d", index.Value), true
+	}
+
+	array.Values[index.Value] = evaluated
+
+	return nil, false
+}
+
+func assignIdentifier(identifier *ast.Identifier, evaluated object.Object, env *object.Environment) (object.Object, bool) {
+	obj, ok := env.ReAssign(identifier.Value, evaluated)
+
+	if !ok {
+		if isError(obj) {
+			return obj, true
+		}
+
+		return newError("identifier not found: %s", identifier.Value), true
+	}
+
+	if isError(obj) {
+		return obj, true
+	}
+
+	return nil, false
+}

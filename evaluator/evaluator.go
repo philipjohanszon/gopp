@@ -38,46 +38,19 @@ func Evaluate(node ast.Node, env *object.Environment) object.Object {
 		}
 
 		if identifier, ok := node.Assignee.(*ast.Identifier); ok {
-			obj, ok := env.ReAssign(identifier.Value, evaluated)
+			obj, done := assignIdentifier(identifier, evaluated, env)
 
-			if !ok {
-				return newError("identifier not found: %s", identifier.Value)
-			}
-
-			if isError(obj) {
+			if done {
 				return obj
 			}
 		}
 
 		if arrayAccess, ok := node.Assignee.(*ast.ArrayAccessExpression); ok {
-			evaluatedArray := Evaluate(arrayAccess.Expression, env)
-			evaluatedIndex := Evaluate(arrayAccess.Index, env)
+			obj, done := assignArray(arrayAccess, evaluated, env)
 
-			if isError(evaluatedArray) {
-				return evaluatedArray
+			if done {
+				return obj
 			}
-
-			if isError(evaluatedIndex) {
-				return evaluatedIndex
-			}
-
-			array, ok := evaluatedArray.(*object.Array)
-
-			if !ok {
-				return newError("not an array: %s", array.Type())
-			}
-
-			index, ok := evaluatedIndex.(*object.Integer)
-
-			if !ok {
-				return newError("not an integer: %s", index.Type())
-			}
-
-			if int(index.Value) > len(array.Values) {
-				return newError("index out of range: %d", index.Value)
-			}
-
-			array.Values[index.Value] = evaluated
 		}
 
 		return NULL
