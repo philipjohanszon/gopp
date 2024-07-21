@@ -3,7 +3,6 @@ package evaluator
 import (
 	"go++/ast"
 	"go++/object"
-	"strconv"
 )
 
 func evaluatePrefixExpression(operator string, right object.Object) object.Object {
@@ -53,10 +52,6 @@ func evaluateInfixExpression(operator string, left, right object.Object) object.
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
-}
-
-func intToString(integer *object.Integer) *object.String {
-	return &object.String{Value: strconv.Itoa(int(integer.Value))}
 }
 
 func evaluateIntegerInfixExpression(operator string, left, right object.Object) object.Object {

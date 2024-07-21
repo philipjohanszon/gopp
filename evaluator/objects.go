@@ -5,6 +5,7 @@ import (
 	"go++/ast"
 	"go++/methods"
 	"go++/object"
+	"strconv"
 )
 
 func newString(value string) *object.String {
@@ -40,4 +41,16 @@ func newArray(values []object.Object) *object.Array {
 
 func newError(format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...)}
+}
+
+func nativeBoolToBooleanObject(isTrue bool) object.Object {
+	if isTrue {
+		return TRUE
+	}
+
+	return FALSE
+}
+
+func intToString(integer *object.Integer) *object.String {
+	return &object.String{Value: strconv.Itoa(int(integer.Value))}
 }

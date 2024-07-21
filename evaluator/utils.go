@@ -41,14 +41,6 @@ func unwrapReturnValue(obj object.Object) object.Object {
 	return obj
 }
 
-func nativeBoolToBooleanObject(isTrue bool) object.Object {
-	if isTrue {
-		return TRUE
-	}
-
-	return FALSE
-}
-
 func isObjectTruthy(obj object.Object) bool {
 	switch obj.(type) {
 	case *object.Boolean:
