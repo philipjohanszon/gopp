@@ -137,6 +137,50 @@ func evaluateIdentifier(node *ast.Identifier, env *object.Environment) object.Ob
 	return value
 }
 
+func evaluateAssignExpression(node *ast.AssignExpression, env *object.Environment) object.Object {
+	evaluated := Evaluate(node.Value, env)
+
+	if isError(evaluated) {
+		return evaluated
+	}
+
+	if identifier, ok := node.Assignee.(*ast.Identifier); ok {
+		obj, done := assignIdentifier(identifier, evaluated, env)
+
+		if done {
+			return obj
+		}
+	}
+
+	if arrayAccess, ok := node.Assignee.(*ast.ArrayAccessExpression); ok {
+		obj, done := assignArray(arrayAccess, evaluated, env)
+
+		if done {
+			return obj
+		}
+	}
+
+	return NULL
+}
+
+func assignIdentifier(identifier *ast.Identifier, evaluated object.Object, env *object.Environment) (object.Object, bool) {
+	obj, ok := env.ReAssign(identifier.Value, evaluated)
+
+	if !ok {
+		if isError(obj) {
+			return obj, true
+		}
+
+		return newError("identifier not found: %s", identifier.Value), true
+	}
+
+	if isError(obj) {
+		return obj, true
+	}
+
+	return nil, false
+}
+
 func assignArray(arrayAccess *ast.ArrayAccessExpression, evaluated object.Object, env *object.Environment) (object.Object, bool) {
 	evaluatedArray := Evaluate(arrayAccess.Expression, env)
 	evaluatedIndex := Evaluate(arrayAccess.Index, env)
@@ -170,20 +214,67 @@ func assignArray(arrayAccess *ast.ArrayAccessExpression, evaluated object.Object
 	return nil, false
 }
 
-func assignIdentifier(identifier *ast.Identifier, evaluated object.Object, env *object.Environment) (object.Object, bool) {
-	obj, ok := env.ReAssign(identifier.Value, evaluated)
+func evaluateCallExpression(node *ast.CallExpression, env *object.Environment) object.Object {
+	function := Evaluate(node.Function, env)
+
+	if isError(function) {
+		return function
+	}
+
+	args := evaluateExpressions(node.Arguments, env)
+
+	if len(args) == 1 && isError(args[0]) {
+		return args[0]
+	}
+
+	return applyFunction(function, args)
+}
+
+func evaluateMemberAccessExpression(node *ast.MemberAccessExpression, env *object.Environment) object.Object {
+	left := Evaluate(node.Expression, env)
+
+	if isError(left) {
+		return left
+	}
+
+	val, ok := left.GetMembers().Get(node.AccessedMember.Value)
 
 	if !ok {
-		if isError(obj) {
-			return obj, true
-		}
-
-		return newError("identifier not found: %s", identifier.Value), true
+		return newError("Error: %s is not member of %s", node.AccessedMember.Value, left.Inspect())
 	}
 
-	if isError(obj) {
-		return obj, true
+	if isError(val) {
+		return val
 	}
 
-	return nil, false
+	if method, ok := val.(*object.BuiltinMethod); ok {
+		method.It = left
+
+		return method
+	}
+
+	return val
+}
+
+func evaluateArrayAccessExpression(node *ast.ArrayAccessExpression, env *object.Environment) object.Object {
+	index := Evaluate(node.Index, env)
+	array := Evaluate(node.Expression, env)
+
+	if isError(array) {
+		return array
+	}
+
+	if isError(index) {
+		return index
+	}
+
+	if _, ok := array.(*object.Array); !ok {
+		return newError("ERROR: %s is not an array", array.Inspect())
+	}
+
+	if _, ok := index.(*object.Integer); !ok {
+		return newError("ERROR: index: %s is not an integer", index.Inspect())
+	}
+
+	return array.(*object.Array).GetIndex(int(index.(*object.Integer).Value))
 }

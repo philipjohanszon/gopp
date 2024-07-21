@@ -219,10 +219,10 @@ func TestBooleanExpression(t *testing.T) {
 		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T", program.Statements[0])
 	}
 
-	literal, ok := stmt.Expression.(*ast.Boolean)
+	literal, ok := stmt.Expression.(*ast.BooleanLiteral)
 
 	if !ok {
-		t.Fatalf("stmt.Expression is not ast.Boolean. got=%T", stmt.Expression)
+		t.Fatalf("stmt.Expression is not ast.BooleanLiteral. got=%T", stmt.Expression)
 	}
 
 	if literal.Value != true {
@@ -1048,10 +1048,10 @@ func TestArrayLiteral(t *testing.T) {
 		t.Fatalf("program.Statements[0] is not ast.LetStatement. got=%T", program.Statements[0])
 	}
 
-	arr, ok := stmt.Value.(*ast.Array)
+	arr, ok := stmt.Value.(*ast.ArrayLiteral)
 
 	if !ok {
-		t.Fatalf("stmt.Value is not ast.Array. got=%T", stmt.Value)
+		t.Fatalf("stmt.Value is not ast.ArrayLiteral. got=%T", stmt.Value)
 	}
 
 	if len(arr.Values) != 3 {
@@ -1122,10 +1122,10 @@ func testLiteralExpression(t *testing.T, exp ast.Expression, expected interface{
 }
 
 func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
-	booleanLiteral, ok := exp.(*ast.Boolean)
+	booleanLiteral, ok := exp.(*ast.BooleanLiteral)
 
 	if !ok {
-		t.Errorf("exp not *ast.Boolean. got=%T", exp)
+		t.Errorf("exp not *ast.BooleanLiteral. got=%T", exp)
 		return false
 	}
 

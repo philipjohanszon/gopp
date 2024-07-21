@@ -15,23 +15,23 @@ func (il *IntegerLiteral) expressionNode()      {}
 func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
 func (il *IntegerLiteral) String() string       { return il.Token.Literal }
 
-type Boolean struct {
+type BooleanLiteral struct {
 	Token token.Token
 	Value bool
 }
 
-func (bl *Boolean) expressionNode()      {}
-func (bl *Boolean) TokenLiteral() string { return bl.Token.Literal }
-func (bl *Boolean) String() string       { return bl.Token.Literal }
+func (bl *BooleanLiteral) expressionNode()      {}
+func (bl *BooleanLiteral) TokenLiteral() string { return bl.Token.Literal }
+func (bl *BooleanLiteral) String() string       { return bl.Token.Literal }
 
-type Array struct {
+type ArrayLiteral struct {
 	Token  token.Token
 	Values []Expression
 }
 
-func (a *Array) expressionNode()      {}
-func (a *Array) TokenLiteral() string { return a.Token.Literal }
-func (a *Array) String() string {
+func (a *ArrayLiteral) expressionNode()      {}
+func (a *ArrayLiteral) TokenLiteral() string { return a.Token.Literal }
+func (a *ArrayLiteral) String() string {
 	var out bytes.Buffer
 
 	items := []string{}

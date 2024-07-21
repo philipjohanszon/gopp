@@ -36,7 +36,7 @@ func (parser *Parser) parseIntegerLiteral() ast.Expression {
 }
 
 func (parser *Parser) parseBoolean() ast.Expression {
-	literal := &ast.Boolean{Token: parser.currentToken, Value: parser.currentTokenIs(token.TRUE)}
+	literal := &ast.BooleanLiteral{Token: parser.currentToken, Value: parser.currentTokenIs(token.TRUE)}
 
 	return literal
 }
@@ -185,7 +185,7 @@ func (parser *Parser) parseAssignExpression(exp ast.Expression) ast.Expression {
 }
 
 func (parser *Parser) parseArray() ast.Expression {
-	arr := &ast.Array{Token: parser.currentToken}
+	arr := &ast.ArrayLiteral{Token: parser.currentToken}
 	arr.Values = parser.parseCallArguments(token.RBRACKET)
 
 	return arr
