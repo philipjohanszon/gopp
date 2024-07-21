@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"go++/ast"
 	lex "go++/lexer"
 	"go++/token"
@@ -92,11 +91,6 @@ func New(lexer *lex.Lexer) *Parser {
 	parser.registerInfix(token.ASSIGN, parser.parseAssignExpression)
 
 	return parser
-}
-
-func (parser *Parser) nextToken() {
-	parser.currentToken = parser.peekToken
-	parser.peekToken = parser.lexer.NextToken()
 }
 
 func (parser *Parser) Errors() []string {
@@ -194,24 +188,6 @@ func (parser *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmt
 }
 
-func (parser *Parser) currentTokenIs(t token.Type) bool {
-	return parser.currentToken.Type == t
-}
-
-func (parser *Parser) peekTokenIs(t token.Type) bool {
-	return parser.peekToken.Type == t
-}
-
-func (parser *Parser) expectPeek(t token.Type) bool {
-	if parser.peekTokenIs(t) {
-		parser.nextToken()
-		return true
-	}
-
-	parser.appendError("expected next token to be of type %s, got type %s instead", t, parser.peekToken.Type)
-	return false
-}
-
 func (parser *Parser) parseExpression(precedence int) ast.Expression {
 	prefix := parser.prefixParseFns[parser.currentToken.Type]
 
@@ -238,22 +214,6 @@ func (parser *Parser) parseExpression(precedence int) ast.Expression {
 
 func (parser *Parser) noPrefixParseFnError(t token.Type) {
 	parser.appendError("no prefix parse function for %s found", t)
-}
-
-func (parser *Parser) peekPrecedence() int {
-	if p, ok := precedences[parser.peekToken.Type]; ok {
-		return p
-	}
-
-	return LOWEST
-}
-
-func (parser *Parser) currentPrecedence() int {
-	if p, ok := precedences[parser.currentToken.Type]; ok {
-		return p
-	}
-
-	return LOWEST
 }
 
 func (parser *Parser) parseBlockStatement() *ast.BlockStatement {
@@ -301,8 +261,4 @@ func (parser *Parser) parseFunctionParameters() []*ast.Identifier {
 	}
 
 	return identifiers
-}
-
-func (parser *Parser) appendError(format string, a ...interface{}) {
-	parser.errors = append(parser.errors, fmt.Sprintf(format, a...))
 }
